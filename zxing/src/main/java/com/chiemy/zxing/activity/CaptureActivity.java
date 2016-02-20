@@ -197,16 +197,12 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
      * @param bundle    The extras
      */
     public void handleDecode(Result rawResult, Bundle bundle) {
-        //inactivityTimer.onActivity();
-        //beepManager.playBeepSoundAndVibrate();
-        //redecodeHandler.postDelayed(redecodeRunnable, 2000);
-//        Intent resultIntent = new Intent();
-//        bundle.putInt("width", mCropRect.width());
-//        bundle.putInt("height", mCropRect.height());
-//        bundle.putString("result", rawResult.getText());
-//        resultIntent.putExtras(bundle);
-//        this.setResult(RESULT_OK, resultIntent);
-//        CaptureActivity.this.finish();
+        beepManager.playBeepSoundAndVibrate();
+        onDecode(rawResult, bundle);
+    }
+
+    protected void onDecode(Result rawResult, Bundle bundle){
+
     }
 
     protected void restartPreviewAndDecode(long delay) {

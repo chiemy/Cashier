@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:layout_alignParentTop="true"
-            android:background="@drawable/shadow" />
+            android:background="@color/colorShadow" />
 
         <RelativeLayout
             android:id="@+id/capture_crop_view"
@@ -37,7 +37,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="5dp"
-                android:src="@drawable/scan_line" />
+                android:background="@drawable/scan_line" />
 
         </RelativeLayout>
 
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_below="@id/capture_crop_view"
-            android:background="@drawable/shadow" />
+            android:background="@color/colorShadow" />
 
         <ImageView
             android:id="@+id/capture_mask_left"
@@ -57,7 +57,7 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@id/capture_mask_top"
             android:layout_toLeftOf="@id/capture_crop_view"
-            android:background="@drawable/shadow" />
+            android:background="@color/colorShadow" />
 
         <ImageView
             android:id="@+id/capture_mask_right"
@@ -67,7 +67,7 @@
             android:layout_alignParentRight="true"
             android:layout_below="@id/capture_mask_top"
             android:layout_toRightOf="@id/capture_crop_view"
-            android:background="@drawable/shadow" />
+            android:background="@color/colorShadow" />
     </RelativeLayout>
 
 </RelativeLayout>
