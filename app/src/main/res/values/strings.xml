@@ -25,4 +25,7 @@
     <string name="error_passwords_not_consistent">Passwords are not consistent!</string>
     <string name="login_with_qq">Login with QQ</string>
     <string name="user_name">User Name</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sure_to_logout">Are you sure you want to log out?</string>
+    <string name="loading_user_info">Loading User info……</string>
 </resources>

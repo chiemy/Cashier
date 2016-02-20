@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import cn.bmob.v3.BmobUser;
 import cn.bmob.v3.listener.OtherLoginListener;
 import cn.bmob.v3.listener.SaveListener;
+import cn.bmob.v3.listener.UpdateListener;
 
 /**
  * 登录
@@ -182,7 +183,7 @@ public class LoginModel implements BaseModel {
      * @param context
      * @param listener
      */
-    public void getQQUserInfo(final Context context, UserInfoListener listener) {
+    public void getQQUserInfo(final Context context, final UserInfoListener listener) {
         userInfoListener = listener;
         if (userInfoListener != null){
             userInfoListener.onStartGetUserInfo();
@@ -204,14 +205,13 @@ public class LoginModel implements BaseModel {
                         if (success){
                             myUser = new MyUser();
                             myUser.avatar = jsonObject.getString("figureurl_qq_2");
-                            updateUser(context, myUser);
+                            String nickName = jsonObject.getString("nickname");
+                            myUser.setUsername(nickName);
+                            updateUser(context, myUser, listener);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }
-                if (userInfoListener != null){
-                    userInfoListener.onGetUserInfo(success, BmobUser.BmobThirdUserAuth.SNS_TYPE_QQ, myUser);
                 }
             }
 
@@ -224,14 +224,27 @@ public class LoginModel implements BaseModel {
 
             @Override
             public void onCancel() {
-
             }
         });
     }
 
-    private void updateUser(Context context, MyUser newUser){
-        BmobUser bmobUser = BmobUser.getCurrentUser(context);
-        newUser.update(context, bmobUser.getObjectId(), null);
+    private void updateUser(Context context, MyUser newUser, final UserInfoListener listener){
+        final MyUser bmobUser = BmobUser.getCurrentUser(context, MyUser.class);
+        newUser.update(context, bmobUser.getObjectId(), new UpdateListener(){
+            @Override
+            public void onSuccess() {
+                if (listener != null){
+                    listener.onGetUserInfo(true, BmobUser.BmobThirdUserAuth.SNS_TYPE_QQ, bmobUser);
+                }
+            }
+
+            @Override
+            public void onFailure(int i, String s) {
+                if (listener != null){
+                    listener.onGetUserInfo(false, BmobUser.BmobThirdUserAuth.SNS_TYPE_QQ, bmobUser);
+                }
+            }
+        });
     }
 
     @Override

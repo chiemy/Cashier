@@ -160,6 +160,7 @@ public class LoginActivity extends BaseActivity implements LoginView, OnClickLis
         if (TextUtils.equals(type, BmobUser.BmobThirdUserAuth.SNS_TYPE_QQ)){
             loginPresenter.getQQUserInfo(this);
         }else{
+            setResult(RESULT_OK);
             finish();
         }
     }
@@ -198,6 +199,7 @@ public class LoginActivity extends BaseActivity implements LoginView, OnClickLis
         showGetUserInfoProgress(false);
         if (TextUtils.equals(BmobUser.BmobThirdUserAuth.SNS_TYPE_QQ, type)){
             if (success){
+                setResult(RESULT_OK);
                 finish();
             }
         }
@@ -207,7 +209,7 @@ public class LoginActivity extends BaseActivity implements LoginView, OnClickLis
     private void showGetUserInfoProgress(boolean show) {
         if (show){
             progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage("正在获取用户信息");
+            progressDialog.setMessage(getString(R.string.loading_user_info));
             progressDialog.show();
         }else if (progressDialog != null && progressDialog.isShowing()){
             progressDialog.dismiss();
