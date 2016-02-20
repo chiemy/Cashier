@@ -23,7 +23,7 @@ public class PurchaseActivity extends CaptureActivity {
     }
 
     @Override
-    public void handleDecode(Result rawResult, Bundle bundle) {
-        
+    protected void onDecode(Result rawResult, Bundle bundle) {
+        super.onDecode(rawResult, bundle);
     }
 }
