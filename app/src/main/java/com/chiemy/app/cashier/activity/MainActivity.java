@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,6 +20,7 @@ import com.chiemy.app.cashier.CustomApplication;
 import com.chiemy.app.cashier.R;
 import com.chiemy.app.cashier.bean.MyUser;
 import com.chiemy.app.cashier.utils.RoundDrawableUtil;
+import com.chiemy.zxing.activity.CaptureActivity;
 
 import cn.bmob.v3.Bmob;
 import cn.bmob.v3.BmobUser;
@@ -42,8 +43,8 @@ public class MainActivity extends BaseActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
+                startActivityForResult(intent, 2);
             }
         });
 
@@ -147,6 +148,9 @@ public class MainActivity extends BaseActivity
         if (resultCode == RESULT_OK){
             if (requestCode == REQUEST_LOGIN){
                 initHeaderView();
+            }else if (requestCode == 2){
+                String result = data.getStringExtra("result");
+                Log.d("-", ">>result = " + result);
             }
         }
     }

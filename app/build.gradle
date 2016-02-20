@@ -31,4 +31,5 @@ dependencies {
     compile 'com.squareup.okio:okio:1.4.0'
     compile files('libs/open_sdk_r5509_lite.jar')
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile project(':zxing')
 }
