@@ -41,7 +41,7 @@ public class MainActivity extends BaseActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, SaleActivity.class);
+                Intent intent = new Intent(MainActivity.this, PurchaseScanActivity.class);
                 startActivityForResult(intent, 2);
             }
         });

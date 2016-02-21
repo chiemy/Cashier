@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  * Created by chiemy on 16/2/20.
  */
 public class ApplicationDBHelper extends SQLiteOpenHelper{
-    private static final String DB_NAME = "cashier.db";
+    public static final String DB_NAME = "cashier.db";
     private static final int VERSION = 1;
 
     public ApplicationDBHelper(Context context) {
@@ -17,7 +17,7 @@ public class ApplicationDBHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
+        db.execSQL(GoodsDAO.GoodsBuilder.getCreateSQL());
     }
 
     @Override

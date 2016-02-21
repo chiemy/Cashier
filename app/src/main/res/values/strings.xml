@@ -28,4 +28,12 @@
     <string name="sign_in">Sign in</string>
     <string name="sure_to_logout">Are you sure you want to log out?</string>
     <string name="loading_user_info">Loading User info……</string>
+    <string name="title_activity_goods_info">Purchase</string>
+    <string name="goods_name">Name Of Goods</string>
+    <string name="purchase_quantity">Quantity</string>
+    <string name="save">Save</string>
+    <string name="error_no_counts">Purchase count is required</string>
+    <string name="purchase_price">Purchase Price</string>
+    <string name="error_price_invalidate">Price must greater than 0</string>
+    <string name="error_quantity_invalidate">Quantity must greater than 0</string>
 </resources>

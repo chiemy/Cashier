@@ -11,7 +11,10 @@ import cn.bmob.v3.BmobUser;
  * Created by chiemy on 16/2/19.
  */
 public class CustomApplication extends Application{
+    public static final String DEFAULT_USER_ID = "default_user_id";
     private static Context context;
+    private static MyUser defaultUser;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -19,6 +22,19 @@ public class CustomApplication extends Application{
     }
 
     public static MyUser getUser(){
-        return BmobUser.getCurrentUser(context, MyUser.class);
+        MyUser user = BmobUser.getCurrentUser(context, MyUser.class);
+        if (user == null){
+            user = getDefaultUser();
+        }
+        return user;
+    }
+
+    private static MyUser getDefaultUser(){
+        if (defaultUser == null){
+            defaultUser = new MyUser();
+            defaultUser.setUsername(context.getString(R.string.sign_in));
+            defaultUser.setObjectId(DEFAULT_USER_ID);
+        }
+        return defaultUser;
     }
 }
