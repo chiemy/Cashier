@@ -132,7 +132,7 @@ public class PurchaseInfoActivity extends AppCompatActivity implements View.OnCl
         purchaseRecordDAO.insert(record, new DBUpdateCallback() {
             @Override
             public void onDBUpdate(boolean success) {
-                
+
             }
         });
 

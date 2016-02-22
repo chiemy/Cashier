@@ -2,6 +2,7 @@ package com.chiemy.app.cashier;
 
 import android.app.Application;
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.chiemy.app.cashier.bean.MyUser;
 
@@ -36,5 +37,13 @@ public class CustomApplication extends Application{
             defaultUser.setObjectId(DEFAULT_USER_ID);
         }
         return defaultUser;
+    }
+
+    /**
+     * 当前用户是否为默认用户
+     * @return
+     */
+    public static boolean isDefaultUser(){
+        return TextUtils.equals(getUser().getObjectId(), DEFAULT_USER_ID);
     }
 }

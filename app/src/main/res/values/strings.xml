@@ -36,4 +36,12 @@
     <string name="purchase_price">Purchase Price</string>
     <string name="error_price_invalidate">Price must greater than 0</string>
     <string name="error_quantity_invalidate">Quantity must greater than 0</string>
+    <string name="change_avatar">Change Avatar</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="select_picture">Select Picture</string>
+
+    <array name="array_item_change_avatar_dialog">
+        <item>@string/take_photo</item>
+        <item>@string/select_picture</item>
+    </array>
 </resources>

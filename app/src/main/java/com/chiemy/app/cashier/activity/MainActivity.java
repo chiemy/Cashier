@@ -1,7 +1,9 @@
 package com.chiemy.app.cashier.activity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -10,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,20 +21,30 @@ import android.widget.TextView;
 import com.chiemy.app.cashier.CustomApplication;
 import com.chiemy.app.cashier.R;
 import com.chiemy.app.cashier.bean.MyUser;
+import com.chiemy.app.cashier.utils.ChangeAvatarUtil;
+import com.chiemy.app.cashier.utils.PixelUtil;
 import com.chiemy.app.cashier.utils.RoundDrawableUtil;
+import com.chiemy.app.cashier.utils.SelectPicUtil;
+
+import java.io.File;
 
 import cn.bmob.v3.Bmob;
 import cn.bmob.v3.BmobUser;
+import cn.bmob.v3.datatype.BmobFile;
+import cn.bmob.v3.listener.UploadFileListener;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
     private View headerView;
+    private ImageView userAvatarIv;
+    private int avatarSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Bmob.initialize(this, "1a707ef2b3e4bfa3cd35e5b62637f39f");
+        avatarSize = PixelUtil.dp2px(80, this);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -60,19 +73,21 @@ public class MainActivity extends BaseActivity
 
     private void initHeaderView(){
         final MyUser user = CustomApplication.getUser();
-        ImageView imageView = (ImageView) headerView.findViewById(R.id.imageView);
-        imageView.setOnClickListener(this);
+        userAvatarIv = (ImageView) headerView.findViewById(R.id.imageView);
+        userAvatarIv.setOnClickListener(this);
+
         View logoutView = headerView.findViewById(R.id.btn_logout);
         logoutView.setOnClickListener(this);
         TextView userNameTv = (TextView) headerView.findViewById(R.id.tv_username);
         if (user != null){
             logoutView.setVisibility(View.VISIBLE);
             userNameTv.setText(user.getUsername());
-            RoundDrawableUtil.loadRoundImage(this, user.avatar, 500, 500, imageView);
-        }else{
-            imageView.setImageResource(R.drawable.ic_account_circle_24dp);
-            userNameTv.setText(R.string.sign_in);
-            logoutView.setVisibility(View.GONE);
+            if (CustomApplication.isDefaultUser()){
+                userAvatarIv.setImageResource(R.drawable.ic_account_circle_24dp);
+                logoutView.setVisibility(View.GONE);
+            }else{
+                RoundDrawableUtil.loadRoundImage(this, user.avatar, avatarSize, userAvatarIv);
+            }
         }
     }
 
@@ -116,8 +131,10 @@ public class MainActivity extends BaseActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.imageView:
-                if (CustomApplication.getUser() == null){
+                if (CustomApplication.isDefaultUser()){
                     startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
+                }else{
+                    showChangeAvatarDialog();
                 }
                 break;
             case R.id.btn_logout:
@@ -140,18 +157,77 @@ public class MainActivity extends BaseActivity
         builder.create().show();
     }
 
+    /**
+     * 修改头像对话框
+     */
+    private void showChangeAvatarDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.change_avatar));
+        builder.setItems(getResources().getStringArray(R.array.array_item_change_avatar_dialog), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        ChangeAvatarUtil.takePhoto(MainActivity.this);
+                        break;
+                    case 1:
+                        ChangeAvatarUtil.selectPicture(MainActivity.this);
+                        break;
+                }
+            }
+        });
+        builder.setNegativeButton(getString(android.R.string.cancel), null);
+        builder.create().show();
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
             if (requestCode == REQUEST_LOGIN){
                 initHeaderView();
+            }else if (requestCode == ChangeAvatarUtil.REQUEST_TAKE_PHOTO){
+                String avatarPath = ChangeAvatarUtil.getAvatarImagePath();
+                uploadAvatar(avatarPath);
+                RoundDrawableUtil.loadRoundImage(this, avatarPath, avatarSize, userAvatarIv);
+            }else if (requestCode == ChangeAvatarUtil.REQUEST_SELECT_PIC){
+                Uri selectedImage = data.getData();
+                String avatarPath = SelectPicUtil.getPath(this, selectedImage);
+                uploadAvatar(avatarPath);
+                RoundDrawableUtil.loadRoundImage(this, avatarPath, avatarSize, userAvatarIv);
             }
         }
+    }
+
+    private void uploadAvatar(String path){
+        BmobFile bmobFile = new BmobFile(new File(path));
+        bmobFile.uploadblock(getApplicationContext(), new MyUploadFileListener(this, bmobFile));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    private static class MyUploadFileListener extends UploadFileListener{
+        private BmobFile bmobFile;
+        private Context context;
+        public MyUploadFileListener(Context context, BmobFile bmobFile){
+            this.context = context.getApplicationContext();
+            this.bmobFile = bmobFile;
+        }
+
+        @Override
+        public void onSuccess() {
+            MyUser user = CustomApplication.getUser();
+            user.avatar = bmobFile.getFileUrl(context);
+            user.update(context, user.getObjectId(), null);
+        }
+
+        @Override
+        public void onFailure(int i, String s) {
+            Log.d("-", i + ", " + s);
+        }
     }
 }

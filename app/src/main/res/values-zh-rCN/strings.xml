@@ -33,4 +33,7 @@
     <string name="purchase_price">进货价格</string>
     <string name="error_quantity_invalidate">数量必须大于0</string>
     <string name="title_activity_goods_info">进货</string>
+    <string name="change_avatar">修改头像</string>
+    <string name="take_photo">拍照</string>
+    <string name="select_picture">选择图片</string>
 </resources>
