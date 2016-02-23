@@ -37,4 +37,5 @@
     <string name="take_photo">拍照</string>
     <string name="select_picture">选择图片</string>
     <string name="changing_avatar">正在修改头像……</string>
+    <string name="goods_list">商品列表</string>
 </resources>

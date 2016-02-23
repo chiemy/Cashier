@@ -76,7 +76,6 @@ public class GoodsDAO {
                         ContentValues contentValues = GoodsBuilder.deconstruct(goods);
                         result = db.update(TABLE_NAME, contentValues, GoodsBuilder.BARCODE + "=?", new String[]{goods.barcode});
                     }
-                    db.close();
                     if (callback != null){
                         callback.onDBUpdate(result > 0);
                     }
@@ -100,7 +99,6 @@ public class GoodsDAO {
             goods = GoodsBuilder.build(cursor);
         }
         cursor.close();
-        db.close();
         return goods;
     }
 
@@ -159,7 +157,6 @@ public class GoodsDAO {
             }while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return goodses;
     }
 
