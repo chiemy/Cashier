@@ -203,8 +203,12 @@ public class LoginModel implements BaseModel {
                         int ret = jsonObject.getInt("ret");
                         success = (ret == 0);
                         if (success){
+                            MyUser bmobUser = BmobUser.getCurrentUser(context, MyUser.class);
                             myUser = new MyUser();
-                            myUser.avatar = jsonObject.getString("figureurl_qq_2");
+                            if (bmobUser != null && TextUtils.isEmpty(bmobUser.avatar)){
+                                myUser.avatar = jsonObject.getString("figureurl_qq_2");
+
+                            }
                             String nickName = jsonObject.getString("nickname");
                             myUser.setUsername(nickName);
                             updateUser(context, myUser, listener);

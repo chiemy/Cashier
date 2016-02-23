@@ -1,5 +1,6 @@
 package com.chiemy.app.cashier.activity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,7 +18,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bmob.BmobProFile;
+import com.bmob.btp.callback.UploadListener;
 import com.chiemy.app.cashier.CustomApplication;
 import com.chiemy.app.cashier.R;
 import com.chiemy.app.cashier.bean.MyUser;
@@ -27,11 +31,12 @@ import com.chiemy.app.cashier.utils.RoundDrawableUtil;
 import com.chiemy.app.cashier.utils.SelectPicUtil;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 import cn.bmob.v3.Bmob;
 import cn.bmob.v3.BmobUser;
 import cn.bmob.v3.datatype.BmobFile;
-import cn.bmob.v3.listener.UploadFileListener;
+import cn.bmob.v3.listener.UpdateListener;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
@@ -71,6 +76,9 @@ public class MainActivity extends BaseActivity
         initHeaderView();
     }
 
+    /**
+     * 初始化NavigationView头部View
+     */
     private void initHeaderView(){
         final MyUser user = CustomApplication.getUser();
         userAvatarIv = (ImageView) headerView.findViewById(R.id.imageView);
@@ -86,9 +94,33 @@ public class MainActivity extends BaseActivity
                 userAvatarIv.setImageResource(R.drawable.ic_account_circle_24dp);
                 logoutView.setVisibility(View.GONE);
             }else{
-                RoundDrawableUtil.loadRoundImage(this, user.avatar, avatarSize, userAvatarIv);
+                updateAvatar(user.avatar);
             }
         }
+    }
+
+    /**
+     * 更新头像
+     * @param avatarPath
+     */
+    private void updateAvatar(String avatarPath){
+        RoundDrawableUtil.loadRoundImage(this, avatarPath, avatarSize, userAvatarIv);
+    }
+
+    /**
+     * 获取当前用户
+     * @return
+     */
+    private MyUser getUser(){
+        return CustomApplication.getUser();
+    }
+
+    /**
+     * 获取当前用户id
+     * @return
+     */
+    private String getUserId(){
+        return getUser().getObjectId();
     }
 
     @Override
@@ -168,7 +200,7 @@ public class MainActivity extends BaseActivity
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        ChangeAvatarUtil.takePhoto(MainActivity.this);
+                        ChangeAvatarUtil.takePhoto(MainActivity.this, CustomApplication.getUser().getObjectId());
                         break;
                     case 1:
                         ChangeAvatarUtil.selectPicture(MainActivity.this);
@@ -176,7 +208,7 @@ public class MainActivity extends BaseActivity
                 }
             }
         });
-        builder.setNegativeButton(getString(android.R.string.cancel), null);
+        //builder.setNegativeButton(getString(android.R.string.cancel), null);
         builder.create().show();
     }
 
@@ -188,21 +220,30 @@ public class MainActivity extends BaseActivity
             if (requestCode == REQUEST_LOGIN){
                 initHeaderView();
             }else if (requestCode == ChangeAvatarUtil.REQUEST_TAKE_PHOTO){
-                String avatarPath = ChangeAvatarUtil.getAvatarImagePath();
+                String avatarPath = ChangeAvatarUtil.getAvatarImagePath(getUserId());
                 uploadAvatar(avatarPath);
-                RoundDrawableUtil.loadRoundImage(this, avatarPath, avatarSize, userAvatarIv);
             }else if (requestCode == ChangeAvatarUtil.REQUEST_SELECT_PIC){
                 Uri selectedImage = data.getData();
                 String avatarPath = SelectPicUtil.getPath(this, selectedImage);
                 uploadAvatar(avatarPath);
-                RoundDrawableUtil.loadRoundImage(this, avatarPath, avatarSize, userAvatarIv);
             }
         }
     }
 
     private void uploadAvatar(String path){
-        BmobFile bmobFile = new BmobFile(new File(path));
-        bmobFile.uploadblock(getApplicationContext(), new MyUploadFileListener(this, bmobFile));
+        showAlertAvatarProgressDialog();
+        ChangeAvatarUtil.compressAvatar(path, getUserId(), avatarSize, 90, new ChangeAvatarUtil.CompressListener() {
+            @Override
+            public void onCompressFinish(String path) {
+                BmobProFile bmobFile = BmobProFile.getInstance(MainActivity.this.getApplicationContext());
+                bmobFile.upload(path, new MyUploadFileListener(MainActivity.this));
+            }
+        });
+    }
+
+    private ProgressDialog alertAvatarProgressDialog;
+    private void showAlertAvatarProgressDialog(){
+        alertAvatarProgressDialog = showProgressDialog(getString(R.string.changing_avatar));
     }
 
     @Override
@@ -210,24 +251,54 @@ public class MainActivity extends BaseActivity
         super.onDestroy();
     }
 
-    private static class MyUploadFileListener extends UploadFileListener{
-        private BmobFile bmobFile;
+    private static class MyUploadFileListener implements UploadListener {
+        private WeakReference<MainActivity> weakReference;
         private Context context;
-        public MyUploadFileListener(Context context, BmobFile bmobFile){
-            this.context = context.getApplicationContext();
-            this.bmobFile = bmobFile;
+        public MyUploadFileListener(MainActivity activity){
+            weakReference = new WeakReference<MainActivity>(activity);
+            this.context = activity.getApplicationContext();
         }
 
         @Override
-        public void onSuccess() {
-            MyUser user = CustomApplication.getUser();
+        public void onSuccess(String fileName, String url, final BmobFile bmobFile) {
+            final MyUser user = CustomApplication.getUser();
             user.avatar = bmobFile.getFileUrl(context);
-            user.update(context, user.getObjectId(), null);
+            user.update(context, user.getObjectId(), new UpdateListener() {
+                @Override
+                public void onSuccess() {
+                    String filePath = ChangeAvatarUtil.getAvatarImagePath(user.getObjectId());
+                    File file = new File(filePath);
+                    file.delete();
+                    MainActivity activity = weakReference.get();
+                    if (activity != null){
+                        activity.alertAvatarProgressDialog.dismiss();
+                        activity.updateAvatar(bmobFile.getFileUrl(context));
+                    }
+                }
+
+                @Override
+                public void onFailure(int i, String s) {
+                    MainActivity activity = weakReference.get();
+                    if (activity != null){
+                        activity.alertAvatarProgressDialog.dismiss();
+                        Toast.makeText(activity, "修改失败(" + i + ")", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
         }
 
         @Override
-        public void onFailure(int i, String s) {
+        public void onProgress(int i) {
+        }
+
+        @Override
+        public void onError(int i, String s) {
             Log.d("-", i + ", " + s);
+            MainActivity activity = weakReference.get();
+            if (activity != null){
+                activity.alertAvatarProgressDialog.dismiss();
+                Toast.makeText(activity, "修改失败(" + i + ")", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

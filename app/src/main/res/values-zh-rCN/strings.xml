@@ -36,4 +36,5 @@
     <string name="change_avatar">修改头像</string>
     <string name="take_photo">拍照</string>
     <string name="select_picture">选择图片</string>
+    <string name="changing_avatar">正在修改头像……</string>
 </resources>

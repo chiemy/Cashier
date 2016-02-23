@@ -208,9 +208,7 @@ public class LoginActivity extends BaseActivity implements LoginView, OnClickLis
     private ProgressDialog progressDialog;
     private void showGetUserInfoProgress(boolean show) {
         if (show){
-            progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage(getString(R.string.loading_user_info));
-            progressDialog.show();
+            progressDialog = showProgressDialog(getString(R.string.loading_user_info));
         }else if (progressDialog != null && progressDialog.isShowing()){
             progressDialog.dismiss();
         }

@@ -32,23 +32,8 @@ public class RoundDrawableUtil {
             public void run() {
                 try {
                     Bitmap bitmap = Glide.with(con).load(url).asBitmap().into(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).get();
-                    int x = 0;
-                    int y = 0;
-                    int width;
-                    int height;
-                    if (bitmap.getWidth() > bitmap.getHeight()){
-                        height = bitmap.getHeight();
-                        width = height;
-                        x = (bitmap.getWidth() - bitmap.getHeight())/2;
-                    }else{
-                        width = bitmap.getWidth();
-                        height = width;
-                        y = (bitmap.getHeight() - bitmap.getWidth())/2;
-                    }
-                    Bitmap bitmap1 = Bitmap.createBitmap(bitmap, x, y, width, height);
-                    bitmap.recycle();
+                    Bitmap bitmap1 = BitmapUtil.captureSquareBitmap(bitmap);
                     Bitmap bitmap2 = Bitmap.createScaledBitmap(bitmap1, radius, radius, true);
-                    bitmap1.recycle();
 
                     final RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(con.getResources(), bitmap2);
                     drawable.setCircular(true);
