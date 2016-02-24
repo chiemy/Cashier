@@ -126,9 +126,15 @@ public class PurchaseInfoActivity extends AppCompatActivity implements View.OnCl
 
         PurchaseRecord record = new PurchaseRecord();
         record.user_id = user.getObjectId();
-        record.goods_id = goods.barcode;
         record.purchase_price = price;
         record.date = Calendar.getInstance().getTime().getTime() + "";
+        record.quantity = quantity;
+
+        goods.name = goodName;
+        goods.purchase_price = price;
+        goods.selling_price = price + 1;
+        record.setGoods(goods);
+
         purchaseRecordDAO.insert(record, new DBUpdateCallback() {
             @Override
             public void onDBUpdate(boolean success) {
@@ -136,15 +142,6 @@ public class PurchaseInfoActivity extends AppCompatActivity implements View.OnCl
             }
         });
 
-        goods.name = goodName;
-        goods.purchase_price = price;
-        goods.selling_price = price + 1;
-        goodsDAO.insertOrUpdate(goods, new DBUpdateCallback() {
-            @Override
-            public void onDBUpdate(boolean success) {
-
-            }
-        });
     }
 
     @Override

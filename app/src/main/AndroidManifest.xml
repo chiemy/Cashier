@@ -70,8 +70,8 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
-            android:name=".activity.GoodsListActivity"
-            android:label="@string/title_activity_goods_list"
+            android:name=".activity.StockActivity"
+            android:label="@string/stock"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

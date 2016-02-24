@@ -8,7 +8,7 @@ public class PurchaseRecord {
     /**
      * 商品id
      */
-    public String goods_id;
+    private String goods_id;
     /**
      * 进货数量
      */
@@ -31,4 +31,23 @@ public class PurchaseRecord {
      * 进货价格
      */
     public float purchase_price;
+
+    private Goods goods;
+
+    public void setGoods(Goods goods) {
+        this.goods = goods;
+        goods_id = goods.barcode;
+    }
+
+    public Goods getGoods() {
+        return goods;
+    }
+
+    public String getGoods_id() {
+        return goods_id;
+    }
+
+    public void setGoods_id(String goods_id) {
+        this.goods_id = goods_id;
+    }
 }

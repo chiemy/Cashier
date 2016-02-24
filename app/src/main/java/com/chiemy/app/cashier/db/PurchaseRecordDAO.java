@@ -8,7 +8,9 @@ import android.database.sqlite.SQLiteException;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.util.Log;
 
+import com.chiemy.app.cashier.bean.Goods;
 import com.chiemy.app.cashier.bean.PurchaseRecord;
 
 import java.util.ArrayList;
@@ -32,9 +34,12 @@ public class PurchaseRecordDAO {
 
     private Map<String, SQLiteDatabase> databaseMap = new HashMap<>(1);
 
+    private GoodsDAO goodsDAO;
+
     private PurchaseRecordDAO(Context context){
         this.context = context;
         handler = new Handler(Looper.getMainLooper());
+        goodsDAO = GoodsDAO.getInstance(context);
     }
 
     public static PurchaseRecordDAO getInstance(Context context) {
@@ -51,11 +56,17 @@ public class PurchaseRecordDAO {
             @Override
             public void run() {
                 try {
+                    Goods goods = record.getGoods();
+                    int quantity = goodsDAO.queryQuantity(goods) + record.quantity;
+                    Log.d("-", ">>>quantity = " + quantity);
+                    goods.quantity = quantity;
+                    boolean success = goodsDAO.insertOrUpdate(goods);
+                    Log.d("PurchaseRecordDAO", "insert = " + success);
                     SQLiteDatabase db = getDB(record.user_id);
                     long result = db.insert(TABLE_NAME, null, PurchaseRecordBuilder.deconstruct(record));
 
                     if (callback != null){
-                        callback.onDBUpdate(result > 0);
+                        callback.onDBUpdate(result >= 0 && success);
                     }
                 }catch (SQLiteException e){
                     e.printStackTrace();
@@ -73,11 +84,9 @@ public class PurchaseRecordDAO {
         SQLiteDatabase db = getDB(userId);
         Cursor cursor = db.query(TABLE_NAME, null, PurchaseRecordBuilder.DATE + "=?", new String[]{date + ""}, null, null, null);
         List<PurchaseRecord> records = new ArrayList<>(2);
-        if (cursor.moveToFirst()) {
-            do {
-                PurchaseRecord record = PurchaseRecordBuilder.build(cursor);
-                records.add(record);
-            }while (cursor.moveToNext());
+        while(cursor.moveToNext()) {
+            PurchaseRecord record = build(userId, cursor);
+            records.add(record);
         }
         cursor.close();
         return records;
@@ -127,15 +136,19 @@ public class PurchaseRecordDAO {
         SQLiteDatabase db = getDB(userId);
         Cursor cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
         List<PurchaseRecord> records = new ArrayList<PurchaseRecord>();
-        if (cursor.moveToFirst()) {
-            do {
-                PurchaseRecord record = PurchaseRecordBuilder.build(cursor);
-                records.add(record);
-            }while (cursor.moveToNext());
+        while (cursor.moveToFirst()) {
+            PurchaseRecord record = build(userId, cursor);
+            records.add(record);
         }
         cursor.close();
-        db.close();
         return records;
+    }
+
+    private PurchaseRecord build(String userId, Cursor cursor){
+        PurchaseRecord record = PurchaseRecordBuilder.build(cursor);
+        Goods goods = goodsDAO.query(userId, record.getGoods_id());
+        record.setGoods(goods);
+        return record;
     }
 
     public void close(){
@@ -184,7 +197,7 @@ public class PurchaseRecordDAO {
 
         public static PurchaseRecord build(Cursor cursor){
             PurchaseRecord record = new PurchaseRecord();
-            record.goods_id = cursor.getString(cursor.getColumnIndex(GOODS_ID));
+            record.setGoods_id(cursor.getString(cursor.getColumnIndex(GOODS_ID)));
             record.user_id = cursor.getString(cursor.getColumnIndex(USER_ID));
             record.quantity = cursor.getInt(cursor.getColumnIndex(COUNT));
             record.supplier = cursor.getString(cursor.getColumnIndex(SUPPLIER));
@@ -196,7 +209,7 @@ public class PurchaseRecordDAO {
 
         public static ContentValues deconstruct(PurchaseRecord record){
             ContentValues contentValues = new ContentValues(7);
-            contentValues.put(GOODS_ID, record.goods_id);
+            contentValues.put(GOODS_ID, record.getGoods_id());
             contentValues.put(USER_ID, record.user_id);
             contentValues.put(COUNT, record.quantity);
             contentValues.put(SUPPLIER, record.supplier);

@@ -20,14 +20,17 @@ import com.chiemy.app.cashier.db.GoodsDAO;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GoodsListActivity extends AppCompatActivity {
+/**
+ * 库存界面
+ */
+public class StockActivity extends AppCompatActivity {
     private GoodsDAO goodsDAO;
     private List<Goods> goodsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_goods_list);
+        setContentView(R.layout.activity_stock);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -52,7 +55,7 @@ public class GoodsListActivity extends AppCompatActivity {
         private LayoutInflater inflater;
 
         public GoodsListAdapter() {
-            inflater = LayoutInflater.from(GoodsListActivity.this);
+            inflater = LayoutInflater.from(StockActivity.this);
         }
 
         @Override

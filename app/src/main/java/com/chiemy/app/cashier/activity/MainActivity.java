@@ -140,7 +140,7 @@ public class MainActivity extends BaseActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            Intent intent = new Intent(this, GoodsListActivity.class);
+            Intent intent = new Intent(this, StockActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_gallery) {
 

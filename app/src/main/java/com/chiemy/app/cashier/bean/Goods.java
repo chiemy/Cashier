@@ -31,4 +31,8 @@ public class Goods extends BmobObject {
      * 上传状态
      */
     public int update_state; // 0-未上传，1-已上传
+    /**
+     * 商品数量
+     */
+    public int quantity;
 }
