@@ -15,12 +15,16 @@
  */
 package com.chiemy.zxing.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -52,6 +56,8 @@ import java.lang.reflect.Field;
  * @author Sean Owen
  */
 public class CaptureActivity extends Activity implements SurfaceHolder.Callback {
+
+    private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -132,7 +138,7 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
             // The activity was paused but not stopped, so the surface still
             // exists. Therefore
             // surfaceCreated() won't be called, so init the camera here.
-            initCamera(scanPreview.getHolder());
+            onInitCamera(scanPreview.getHolder());
         } else {
             // Install the callback and wait for surfaceCreated() to init the
             // camera.
@@ -154,8 +160,10 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
             handler = null;
         }
         //inactivityTimer.onPause();
+        if (cameraManager != null){
+            cameraManager.closeDriver();
+        }
         beepManager.close();
-        cameraManager.closeDriver();
         if (!isHasSurface) {
             scanPreview.getHolder().removeCallback(this);
         }
@@ -175,7 +183,7 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
         }
         if (!isHasSurface) {
             isHasSurface = true;
-            initCamera(holder);
+            onInitCamera(holder);
         }
     }
 
@@ -209,7 +217,48 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
         redecodeHandler.postDelayed(redecodeRunnable, delay);
     }
 
-    private void initCamera(final SurfaceHolder surfaceHolder) {
+    protected void onInitCamera(SurfaceHolder surfaceHolder) {
+        // 是否已经获取了相机权限
+        int hasCameraPermission = ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION);
+        // 没有获取相机权限
+        if (hasCameraPermission != PackageManager.PERMISSION_GRANTED) {
+            // 是否需要解释下为什么需要该权限，一般在用户拒绝授权后返回true
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    CAMERA_PERMISSION)) {
+                showMessageOKCancel("扫码功能需要使用相机，请授权",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                requestCameraPermission();
+                            }
+                        });
+            }else{
+                if (!permissionDeny){
+                    requestCameraPermission();
+                }
+            }
+        }else{
+            initCamera(surfaceHolder);
+        }
+    }
+
+    private void requestCameraPermission(){
+        ActivityCompat.requestPermissions(this,
+                new String[] {CAMERA_PERMISSION},
+                REQUEST_CODE_ASK_PERMISSIONS);
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new android.support.v7.app.AlertDialog.Builder(this)
+                .setMessage(message)
+                .setPositiveButton("好的", okListener)
+                .setNegativeButton("取消", null)
+                .create()
+                .show();
+    }
+
+
+    protected void initCamera(final SurfaceHolder surfaceHolder) {
         if (surfaceHolder == null) {
             throw new IllegalStateException("No SurfaceHolder provided");
         }
@@ -338,6 +387,27 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
             if (activity != null && activity.handler != null) {
                 activity.handler.restartPreviewAndDecode();
             }
+        }
+    }
+
+    private boolean permissionDeny = false;
+    private static final int REQUEST_CODE_ASK_PERMISSIONS = 1;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_PERMISSIONS:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission Granted
+                    initCamera(scanPreview.getHolder());
+                } else {
+                    // Permission Denied
+                    //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+                    permissionDeny = true;
+                    // 会触发onResume方法，onResume里又会请求权限，导致死循环
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }

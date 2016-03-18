@@ -22,6 +22,7 @@ import java.util.List;
 public class SaleActivity extends CaptureActivity {
     private List<String> datas;
     private SaleAdapter adapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,4 +79,5 @@ public class SaleActivity extends CaptureActivity {
             tv.setTextColor(Color.WHITE);
         }
     }
+
 }
